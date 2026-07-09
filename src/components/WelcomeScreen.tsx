@@ -32,42 +32,20 @@ export default function WelcomeScreen({
   const [pin, setPin] = useState('');
   const [error, setError] = useState('');
 
-  const handleLogin = (e?: React.FormEvent) => {
-    if (e) e.preventDefault();
-    
-    if (role === 'Worker' && pin === '0000') {
-      setCurrentUser('Worker');
-      setError('');
-      setPin('');
-    } else if (role === 'Admin' && pin === '1234') {
-      setCurrentUser('Admin');
-      setError('');
-      setPin('');
-    } else {
-      setError('Incorrect PIN code. Try again!');
-      setPin('');
-    }
-  };
-
   const handleKeypadPress = (val: string) => {
     setError('');
     if (val === 'C') {
       setPin('');
     } else if (val === '⌫') {
       setPin(prev => prev.slice(0, -1));
-    } else if (pin.length < 4) {
+    } else if (pin.length < 6) {
       const newPin = pin + val;
       setPin(newPin);
       
-      // Auto-submit if 4 digits
-      if (newPin.length === 4) {
-        // Simple short delay to allow visual feedback before submission
+      // Auto-submit if 6 digits for Admin
+      if (newPin.length === 6) {
         setTimeout(() => {
-          if (role === 'Worker' && newPin === '0000') {
-            setCurrentUser('Worker');
-            setError('');
-            setPin('');
-          } else if (role === 'Admin' && newPin === '1234') {
+          if (newPin === '123456') {
             setCurrentUser('Admin');
             setError('');
             setPin('');
@@ -107,7 +85,7 @@ export default function WelcomeScreen({
                 className={`flex-1 py-2 rounded-xl text-xs font-black transition-all flex items-center justify-center gap-1.5 cursor-pointer ${role === 'Worker' ? 'bg-[#3B82F6] text-white shadow-[0_4px_12px_rgba(59,130,246,0.2)]' : 'text-slate-500 hover:text-slate-800'}`}
               >
                 <User className="w-4 h-4" />
-                Worker Login
+                Employee Login
               </button>
               <button
                 id="role-admin-btn"
@@ -119,53 +97,69 @@ export default function WelcomeScreen({
               </button>
             </div>
 
-            {/* PIN INDICATOR */}
-            <div className="text-center mb-4">
-              <span className="text-xs text-slate-500 block mb-2.5 font-bold">
-                Enter {role} Security PIN
-              </span>
-              <div className="flex justify-center gap-4 py-2">
-                {[...Array(4)].map((_, i) => (
-                  <div
-                    key={i}
-                    className={`w-3.5 h-3.5 rounded-full border-2 transition-all duration-150 ${
-                      i < pin.length 
-                        ? 'bg-[#3B82F6] border-[#3B82F6] scale-110 shadow-[0_0_10px_rgba(59,130,246,0.3)]' 
-                        : 'border-slate-300 bg-white'
-                    }`}
-                  />
-                ))}
+            {/* LOGIN INPUT / AREA */}
+            {role === 'Worker' ? (
+              <div className="text-center py-8">
+                <button
+                  id="direct-employee-login-btn"
+                  onClick={() => {
+                    setCurrentUser('Worker');
+                    setError('');
+                  }}
+                  className="px-6 py-4 bg-[#3B82F6] hover:bg-blue-600 active:scale-95 text-white font-black text-sm rounded-2xl shadow-[0_8px_30px_rgba(59,130,246,0.25)] flex items-center justify-center gap-2 cursor-pointer w-full transition-all"
+                >
+                  <User className="w-5 h-5 text-white animate-pulse" />
+                  LOG IN AS EMPLOYEE
+                </button>
+                <p className="text-[10px] text-slate-400 mt-3 font-semibold">No PIN code required for Employee access</p>
               </div>
-              <span className="text-[10px] text-[#3B82F6] bg-blue-50/80 px-3 py-0.5 rounded-full border border-blue-100 inline-block mt-2.5 font-mono font-bold">
-                Hint PIN: {role === 'Worker' ? '0000' : '1234'}
-              </span>
-              {error && (
-                <div className="text-xs text-rose-600 mt-2.5 font-semibold animate-pulse">
-                  {error}
+            ) : (
+              <div className="text-center mb-4">
+                <span className="text-xs text-slate-500 block mb-2.5 font-bold">
+                  Enter Admin Security PIN
+                </span>
+                <div className="flex justify-center gap-3 py-2">
+                  {[...Array(6)].map((_, i) => (
+                    <div
+                      key={i}
+                      className={`w-3.5 h-3.5 rounded-full border-2 transition-all duration-150 ${
+                        i < pin.length 
+                          ? 'bg-[#3B82F6] border-[#3B82F6] scale-110 shadow-[0_0_10px_rgba(59,130,246,0.3)]' 
+                          : 'border-slate-300 bg-white'
+                      }`}
+                    />
+                  ))}
                 </div>
-              )}
-            </div>
+                {error && (
+                  <div className="text-xs text-rose-600 mt-2.5 font-semibold animate-pulse">
+                    {error}
+                  </div>
+                )}
+              </div>
+            )}
           </div>
 
-          {/* TOUCH KEYPAD */}
-          <div className="grid grid-cols-3 gap-3 mb-4">
-            {['1', '2', '3', '4', '5', '6', '7', '8', '9', 'C', '0', '⌫'].map((char) => (
-              <button
-                id={`keypad-${char === '⌫' ? 'back' : char === 'C' ? 'clear' : char}`}
-                key={char}
-                onClick={() => handleKeypadPress(char)}
-                className={`h-14 rounded-2xl text-lg font-black flex items-center justify-center transition-all cursor-pointer ${
-                  char === 'C' 
-                    ? 'bg-rose-50 text-rose-600 border border-rose-100 hover:bg-rose-100 active:scale-95' 
-                    : char === '⌫' 
-                    ? 'bg-slate-100 text-slate-500 hover:bg-slate-200 active:scale-95 border border-slate-200' 
-                    : 'bg-white text-[#0F172A] border border-slate-200/80 hover:bg-slate-50 active:scale-95 shadow-[0_2px_8px_rgba(0,0,0,0.015)]'
-                }`}
-              >
-                {char}
-              </button>
-            ))}
-          </div>
+          {/* TOUCH KEYPAD - ONLY FOR ADMIN */}
+          {role === 'Admin' && (
+            <div className="grid grid-cols-3 gap-3 mb-4">
+              {['1', '2', '3', '4', '5', '6', '7', '8', '9', 'C', '0', '⌫'].map((char) => (
+                <button
+                  id={`keypad-${char === '⌫' ? 'back' : char === 'C' ? 'clear' : char}`}
+                  key={char}
+                  onClick={() => handleKeypadPress(char)}
+                  className={`h-14 rounded-2xl text-lg font-black flex items-center justify-center transition-all cursor-pointer ${
+                    char === 'C' 
+                      ? 'bg-rose-50 text-rose-600 border border-rose-100 hover:bg-rose-100 active:scale-95' 
+                      : char === '⌫' 
+                      ? 'bg-slate-100 text-slate-500 hover:bg-slate-200 active:scale-95 border border-slate-200' 
+                      : 'bg-white text-[#0F172A] border border-slate-200/80 hover:bg-slate-50 active:scale-95 shadow-[0_2px_8px_rgba(0,0,0,0.015)]'
+                  }`}
+                >
+                  {char}
+                </button>
+              ))}
+            </div>
+          )}
         </div>
       ) : (
         /* LOGGED IN MAIN MENU */
@@ -186,7 +180,7 @@ export default function WelcomeScreen({
                   Logged in as
                 </span>
                 <span className="text-sm font-black text-[#0F172A]">
-                  {currentUser === 'Admin' ? 'Store Administrator' : 'Worker Assistant'}
+                  {currentUser === 'Admin' ? 'Store Administrator' : 'Employee Assistant'}
                 </span>
               </div>
             </div>

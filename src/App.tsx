@@ -253,6 +253,7 @@ export default function App() {
                 setOrders={setOrders}
                 onGoBack={handleBackToDashboard}
                 onReprintOrder={handleReprintOrder}
+                onOrderPress={handleOpenOrdering}
               />
             </motion.div>
           )}
