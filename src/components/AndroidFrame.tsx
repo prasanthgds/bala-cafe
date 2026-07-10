@@ -4,7 +4,7 @@
  */
 
 import React, { useState, useEffect } from 'react';
-import { Wifi, Battery, Signal, ArrowLeft, Home, Square } from 'lucide-react';
+import { Battery, Signal, ArrowLeft, Home, Square } from 'lucide-react';
 
 interface AndroidFrameProps {
   children: React.ReactNode;
@@ -54,11 +54,7 @@ export default function AndroidFrame({
           <span className="font-medium tracking-tight">{time}</span>
           <div className="flex items-center gap-1.5 opacity-90">
             <Signal className="w-3.5 h-3.5" />
-            <Wifi className="w-3.5 h-3.5" />
-            <div className="flex items-center gap-0.5">
-              <span className="text-[10px] leading-none">98%</span>
-              <Battery className="w-4 h-4 rotate-0" />
-            </div>
+            <Battery className="w-4 h-4 rotate-0" />
           </div>
         </div>
 

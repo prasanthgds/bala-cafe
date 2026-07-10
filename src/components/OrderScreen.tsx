@@ -74,17 +74,17 @@ export default function OrderScreen({
   };
 
   const clearCart = () => {
-    if (window.confirm('Are you sure you want to clear the current cart?')) {
-      setCart([]);
-    }
+    setCart([]);
   };
 
+  const shouldShowBottomBar = selectedCategory !== null || totalItemsCount > 0;
+
   return (
-    <div id="ordering-layout" className="flex-1 flex flex-col justify-between bg-[#F2F4F7]">
+    <div id="ordering-layout" className="flex-1 flex flex-col justify-between bg-[#F2F4F7] relative h-full overflow-hidden">
       
       {/* 1. INITIAL CATEGORY SELECTOR (CAFE vs HOTEL) */}
       {!selectedCategory ? (
-        <div id="category-selector-gate" className="flex-1 flex flex-col justify-center items-center px-6 py-8">
+        <div id="category-selector-gate" className="flex-1 flex flex-col justify-center items-center px-6 py-8 pb-32">
           <p className="text-xs font-extrabold tracking-widest text-slate-500 uppercase mb-8">
             Select Order Department
           </p>
@@ -188,7 +188,7 @@ export default function OrderScreen({
           </div>
 
           {/* PRODUCT GRID CONTAINER */}
-          <div className="flex-1 overflow-y-auto p-3 space-y-2 pb-24">
+          <div className="flex-1 overflow-y-auto p-3 space-y-2 pb-32">
             {filteredItems.length === 0 ? (
               <div className="text-center py-12">
                 <p className="text-sm text-slate-500 font-bold">No items found matching "{searchQuery}"</p>
@@ -258,129 +258,131 @@ export default function OrderScreen({
               </div>
             )}
           </div>
+        </div>
+      )}
 
-          {/* 3. DYNAMIC BOTTOM CART DRAWER & ACTION SECTION */}
-          <div className="absolute bottom-0 left-0 right-0 bg-white border-t border-slate-200 z-50 shadow-[0_-10px_30px_rgba(15,23,42,0.04)]">
-            
-            {/* COLLAPSIBLE CART SUMMARY SECTION */}
-            {totalItemsCount > 0 && (
-              <div className="border-b border-slate-100">
-                {/* Header toggle for drawer */}
-                <div
-                  id="cart-drawer-toggle"
-                  onClick={() => setIsCartExpanded(!isCartExpanded)}
-                  className="w-full px-4 py-2.5 flex items-center justify-between text-slate-500 hover:text-slate-800 transition-colors cursor-pointer select-none"
-                >
-                  <span className="text-xs font-black flex items-center gap-1.5">
-                    <ShoppingBag className="w-4 h-4 text-[#3B82F6]" />
-                    Selected Items ({totalItemsCount})
-                  </span>
-                  <div className="flex items-center gap-3">
-                    <button
-                      id="clear-cart-text-btn"
-                      onClick={(e) => { e.stopPropagation(); clearCart(); }}
-                      className="text-[9px] text-rose-600 hover:text-rose-700 font-extrabold tracking-wider uppercase bg-rose-50 px-2 py-0.5 rounded border border-rose-100 cursor-pointer"
-                    >
-                      Clear All
-                    </button>
-                    {isCartExpanded ? (
-                      <ChevronDown className="w-4 h-4" />
-                    ) : (
-                      <ChevronUp className="w-4 h-4 animate-bounce" />
-                    )}
-                  </div>
+      {/* 3. DYNAMIC BOTTOM CART DRAWER & ACTION SECTION */}
+      {shouldShowBottomBar && (
+        <div className="absolute bottom-0 left-0 right-0 bg-white border-t border-slate-200 z-50 shadow-[0_-10px_30px_rgba(15,23,42,0.04)]">
+          
+          {/* COLLAPSIBLE CART SUMMARY SECTION */}
+          {totalItemsCount > 0 && (
+            <div className="border-b border-slate-100">
+              {/* Header toggle for drawer */}
+              <div
+                id="cart-drawer-toggle"
+                onClick={() => setIsCartExpanded(!isCartExpanded)}
+                className="w-full px-4 py-2.5 flex items-center justify-between text-slate-500 hover:text-slate-800 transition-colors cursor-pointer select-none"
+              >
+                <span className="text-xs font-black flex items-center gap-1.5">
+                  <ShoppingBag className="w-4 h-4 text-[#3B82F6]" />
+                  Selected Items ({totalItemsCount})
+                </span>
+                <div className="flex items-center gap-3">
+                  <button
+                    id="clear-cart-text-btn"
+                    onClick={(e) => { e.stopPropagation(); clearCart(); }}
+                    className="text-[9px] text-rose-600 hover:text-rose-700 font-extrabold tracking-wider uppercase bg-rose-50 px-2 py-0.5 rounded border border-rose-100 cursor-pointer"
+                  >
+                    Clear All
+                  </button>
+                  {isCartExpanded ? (
+                    <ChevronDown className="w-4 h-4" />
+                  ) : (
+                    <ChevronUp className="w-4 h-4 animate-bounce" />
+                  )}
                 </div>
+              </div>
 
-                {/* Cart list drawer expanded */}
-                <AnimatePresence>
-                  {isCartExpanded && (
-                    <motion.div
-                      initial={{ height: 0 }}
-                      animate={{ height: 'auto' }}
-                      exit={{ height: 0 }}
-                      className="overflow-hidden bg-[#F8FAFC] max-h-52 overflow-y-auto"
-                    >
-                      <div className="p-3 space-y-1.5">
-                        {cart.map((item) => (
-                          <div 
-                            id={`cart-row-${item.menuItem.id}`}
-                            key={item.menuItem.id} 
-                            className="flex items-center justify-between text-xs py-1.5 border-b border-slate-100/80"
-                          >
-                            <div className="flex-1 min-w-0 pr-2">
-                              <span className="font-extrabold text-slate-800 block truncate">{item.menuItem.name}</span>
-                              <span className="text-[10px] text-slate-500 font-mono font-medium">
-                                ₹{item.menuItem.price} x {item.quantity}
-                              </span>
-                            </div>
-                            <div className="flex items-center gap-2">
-                              <span className="font-black font-mono text-[#3B82F6] min-w-12 text-right">
-                                ₹{item.menuItem.price * item.quantity}
-                              </span>
-                              <div className="flex items-center bg-white rounded-lg border border-slate-200 p-0.5 scale-90">
-                                <button
-                                  id={`cart-drawer-dec-${item.menuItem.id}`}
-                                  onClick={() => removeFromCart(item.menuItem.id, true)}
-                                  className="p-1 text-slate-400 hover:text-slate-700 cursor-pointer"
-                                >
-                                  <Minus className="w-3 h-3" />
-                                </button>
-                                <span className="px-1 text-[11px] font-black text-slate-800">{item.quantity}</span>
-                                <button
-                                  id={`cart-drawer-inc-${item.menuItem.id}`}
-                                  onClick={() => addToCart(item.menuItem.id ? item.menuItem : item.menuItem)}
-                                  className="p-1 text-slate-400 hover:text-slate-700 cursor-pointer"
-                                >
-                                  <Plus className="w-3 h-3" />
-                                </button>
-                              </div>
+              {/* Cart list drawer expanded */}
+              <AnimatePresence>
+                {isCartExpanded && (
+                  <motion.div
+                    initial={{ height: 0 }}
+                    animate={{ height: 'auto' }}
+                    exit={{ height: 0 }}
+                    className="overflow-hidden bg-[#F8FAFC] max-h-52 overflow-y-auto"
+                  >
+                    <div className="p-3 space-y-1.5">
+                      {cart.map((item) => (
+                        <div 
+                          id={`cart-row-${item.menuItem.id}`}
+                          key={item.menuItem.id} 
+                          className="flex items-center justify-between text-xs py-1.5 border-b border-slate-100/80"
+                        >
+                          <div className="flex-1 min-w-0 pr-2">
+                            <span className="font-extrabold text-slate-800 block truncate">{item.menuItem.name}</span>
+                            <span className="text-[10px] text-slate-500 font-mono font-medium">
+                              ₹{item.menuItem.price} x {item.quantity}
+                            </span>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <span className="font-black font-mono text-[#3B82F6] min-w-12 text-right">
+                              ₹{item.menuItem.price * item.quantity}
+                            </span>
+                            <div className="flex items-center bg-white rounded-lg border border-slate-200 p-0.5 scale-90">
                               <button
-                                id={`cart-drawer-del-${item.menuItem.id}`}
-                                onClick={() => removeFromCart(item.menuItem.id)}
-                                className="p-1 text-rose-500 hover:text-rose-700 hover:bg-rose-50 rounded-lg cursor-pointer ml-1"
-                                aria-label={`Delete ${item.menuItem.name}`}
+                                id={`cart-drawer-dec-${item.menuItem.id}`}
+                                onClick={() => removeFromCart(item.menuItem.id, true)}
+                                className="p-1 text-slate-400 hover:text-slate-700 cursor-pointer"
                               >
-                                <Trash2 className="w-3.5 h-3.5" />
+                                <Minus className="w-3 h-3" />
+                              </button>
+                              <span className="px-1 text-[11px] font-black text-slate-800">{item.quantity}</span>
+                              <button
+                                id={`cart-drawer-inc-${item.menuItem.id}`}
+                                onClick={() => addToCart(item.menuItem)}
+                                className="p-1 text-slate-400 hover:text-slate-700 cursor-pointer"
+                              >
+                                <Plus className="w-3 h-3" />
                               </button>
                             </div>
+                            <button
+                              id={`cart-drawer-del-${item.menuItem.id}`}
+                              onClick={() => removeFromCart(item.menuItem.id)}
+                              className="p-1 text-rose-500 hover:text-rose-700 hover:bg-rose-50 rounded-lg cursor-pointer ml-1"
+                              aria-label={`Delete ${item.menuItem.name}`}
+                            >
+                              <Trash2 className="w-3.5 h-3.5" />
+                            </button>
                           </div>
-                        ))}
-                      </div>
-                    </motion.div>
-                  )}
-                </AnimatePresence>
-              </div>
-            )}
-
-            {/* ACTION FOOTER BAR */}
-            <div className="p-3.5 flex items-center justify-between gap-3 bg-white">
-              {/* Back out button */}
-              <button
-                id="order-exit-btn"
-                onClick={() => setSelectedCategory(null)}
-                className="px-4 py-3 text-xs font-black text-slate-600 bg-white border border-slate-200 rounded-xl hover:text-slate-800 active:scale-95 transition-all cursor-pointer flex items-center gap-1 shrink-0 shadow-sm"
-              >
-                Exit
-              </button>
-
-              {/* Total checkout trigger */}
-              <button
-                id="order-checkout-btn"
-                disabled={totalItemsCount === 0}
-                onClick={onCheckoutPress}
-                className={`flex-1 py-3 px-4 rounded-xl font-black text-xs tracking-wide flex items-center justify-between shadow-sm active:scale-99 transition-all cursor-pointer ${totalItemsCount > 0 ? 'bg-gradient-to-r from-[#3B82F6] to-[#2563EB] text-white hover:from-blue-700 hover:to-blue-600 shadow-[0_4px_20px_rgba(59,130,246,0.25)]' : 'bg-slate-100 text-slate-400 border border-slate-200/80 cursor-not-allowed'}`}
-              >
-                <span className="flex items-center gap-1.5 font-black">
-                  <ShoppingBag className="w-4 h-4" />
-                  CHECKOUT & PRINT
-                </span>
-                <span className="font-mono text-sm bg-[#0F172A] text-white px-2.5 py-1 rounded-lg font-black border border-white/10 shadow-[0_0_8px_rgba(255,255,255,0.05)]">
-                  ₹{cartTotal.toLocaleString()}
-                </span>
-              </button>
+                        </div>
+                      ))}
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
             </div>
+          )}
 
+          {/* ACTION FOOTER BAR */}
+          <div className="p-3.5 flex items-center justify-between gap-3 bg-white">
+            {/* Back out button */}
+            <button
+              id="order-exit-btn"
+              onClick={() => selectedCategory ? setSelectedCategory(null) : onGoBack()}
+              className="px-4 py-3 text-xs font-black text-slate-600 bg-white border border-slate-200 rounded-xl hover:text-slate-800 active:scale-95 transition-all cursor-pointer flex items-center gap-1 shrink-0 shadow-sm"
+            >
+              Exit
+            </button>
+
+            {/* Total checkout trigger */}
+            <button
+              id="order-checkout-btn"
+              disabled={totalItemsCount === 0}
+              onClick={onCheckoutPress}
+              className={`flex-1 py-3 px-4 rounded-xl font-black text-xs tracking-wide flex items-center justify-between shadow-sm active:scale-99 transition-all cursor-pointer ${totalItemsCount > 0 ? 'bg-gradient-to-r from-[#3B82F6] to-[#2563EB] text-white hover:from-blue-700 hover:to-blue-600 shadow-[0_4px_20px_rgba(59,130,246,0.25)]' : 'bg-slate-100 text-slate-400 border border-slate-200/80 cursor-not-allowed'}`}
+            >
+              <span className="flex items-center gap-1.5 font-black">
+                <ShoppingBag className="w-4 h-4" />
+                CHECKOUT & PRINT
+              </span>
+              <span className="font-mono text-sm bg-[#0F172A] text-white px-2.5 py-1 rounded-lg font-black border border-white/10 shadow-[0_0_8px_rgba(255,255,255,0.05)]">
+                ₹{cartTotal.toLocaleString()}
+              </span>
+            </button>
           </div>
+
         </div>
       )}
     </div>

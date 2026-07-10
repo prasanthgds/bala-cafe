@@ -21,6 +21,9 @@ export default function App() {
   // Navigation Screens: 'welcome' | 'order' | 'print' | 'admin'
   const [activeScreen, setActiveScreen] = useState<'welcome' | 'order' | 'print' | 'admin'>('welcome');
   
+  // Track previous screen for smart back navigation (e.g., print screen can return to order/admin/welcome)
+  const [previousScreen, setPreviousScreen] = useState<'welcome' | 'order' | 'admin'>('welcome');
+  
   // Menu database state
   const [menuItems, setMenuItems] = useState<MenuItem[]>([]);
   
@@ -99,6 +102,7 @@ export default function App() {
       };
       setActiveOrder(dummyOrder);
     }
+    setPreviousScreen('welcome');
     setActiveScreen('print');
   };
 
@@ -138,16 +142,26 @@ export default function App() {
     setIsCheckoutOpen(false);
 
     // Navigate to printer
+    setPreviousScreen('order');
     setActiveScreen('print');
   };
 
   const handleReprintOrder = (historicOrder: Order) => {
     setActiveOrder(historicOrder);
+    setPreviousScreen('admin');
     setActiveScreen('print');
   };
 
   const handleBackToDashboard = () => {
     setActiveScreen('welcome');
+  };
+
+  const handleBackPress = () => {
+    if (activeScreen === 'print') {
+      setActiveScreen(previousScreen);
+    } else {
+      setActiveScreen('welcome');
+    }
   };
 
   // Screen header title calculation
@@ -170,7 +184,7 @@ export default function App() {
     <AndroidFrame
       title={screenTitle}
       showBackBtn={activeScreen !== 'welcome'}
-      onBackPress={activeScreen !== 'welcome' ? handleBackToDashboard : undefined}
+      onBackPress={activeScreen !== 'welcome' ? handleBackPress : undefined}
       onHomePress={currentUser ? handleBackToDashboard : undefined}
     >
       <div className="flex-1 flex flex-col relative h-full">
@@ -231,7 +245,7 @@ export default function App() {
                 setPrinterSettings={setPrinterSettings}
                 onDone={() => {
                   setActiveOrder(null);
-                  setActiveScreen('welcome');
+                  setActiveScreen(previousScreen === 'order' ? 'order' : previousScreen);
                 }}
               />
             </motion.div>
